@@ -34,3 +34,6 @@ verbs.d/local/
 *.key
 *.pem
 broker/.venv/
+
+# Eval measurements — these are outputs, not source
+eval_results.json

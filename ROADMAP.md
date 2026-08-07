@@ -13,13 +13,21 @@
 | 5 | Installer design + preflight | `installer/` | ✅ 21 tests |
 | 6 | `hermesctl` core + executor + snapshot gate | `broker/` | ✅ 156 tests |
 | 7 | btrfs round trip on real hardware | `snapshot/` + `integration/` | ✅ 22 assertions in a Linux VM |
-| 8 | First-boot wizard implementation | `firstboot/` | pending |
-| 9 | Convert-existing-Ubuntu script | `installer/` | pending |
-| 10 | Beginner documentation | `docs/` | pending |
+| 7b | Model verb-routing reality-check (llama3.1 + qwen2.5, 7B) | `agent/` | ✅ 83% both; refusal weak, hallucination + "clean my disk"→format reproduce cross-model |
+| 8 | `hermesd` core loop, wired to reject-and-clarify + ambiguity gate | `agent/` | pending — blocked on #7b findings |
+| 9 | First-boot wizard implementation | `firstboot/` | pending |
+| 10 | Convert-existing-Ubuntu script | `installer/` | pending |
+| 11 | Beginner documentation | `docs/` | pending |
 
 **v0.1 is done when:** a fresh Ubuntu Server 24.04 VM can be converted by one
 script, boots to the wizard, downloads a model, and a beginner can install
 software through conversation with a real approval card and a working undo.
+
+**The #7b finding changed #8's design.** Routing works (100% in-scope on
+llama3.1); blind trust does not. hermesd must validate the model's verb
+against the catalogue (reject-and-clarify) and treat vague requests as
+"ask, don't guess" — especially anything that could be read as destructive.
+See `agent/REALITY-CHECK.md`.
 
 ## v0.2 — The ISO
 
