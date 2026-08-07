@@ -122,8 +122,13 @@ class AuditLog:
                 line = f"{when} — You said no to: {r.get('summary', verb)}.\n    Nothing changed."
             elif decision == "refused":
                 line = (
-                    f"{when} — I refused my own request: {verb}.\n"
+                    f"{when} — I couldn't help with: {r.get('summary', verb)}.\n"
                     f"    {r.get('reason', 'It is on my no-list.')}"
+                )
+            elif decision == "clarify":
+                line = (
+                    f"{when} — You asked me to clarify: {verb}.\n"
+                    f"    I didn't act, because I wasn't sure what you meant."
                 )
             elif decision == "taught":
                 line = f"{when} — You taught me a new ability: {verb}."
