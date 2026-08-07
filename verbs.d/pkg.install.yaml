@@ -1,0 +1,14 @@
+verb: pkg.install
+summary: "Install {names}"
+risk: medium
+snapshot_before: true
+args:
+  names:
+    type: list[package_name]
+    max_items: 20
+dry_run: ["/usr/bin/apt-get", "install", "--simulate", "{names}"]
+execute: ["/usr/bin/apt-get", "install", "-y", "{names}"]
+parse_dry_run: apt_simulate
+explain: |
+  I'll install {names} from Ubuntu's official software catalogue.
+  This adds new programs to your computer. It doesn't remove anything.

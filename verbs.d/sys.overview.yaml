@@ -1,0 +1,8 @@
+verb: sys.overview
+summary: "Look at what's on this computer"
+risk: safe
+snapshot_before: false
+execute: ["/usr/bin/hermesos-overview"]
+explain: |
+  I'll look at your disk, memory, network and updates.
+  This only reads information — nothing changes.

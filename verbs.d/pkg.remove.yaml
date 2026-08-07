@@ -1,0 +1,16 @@
+verb: pkg.remove
+summary: "Remove {names}"
+risk: high
+snapshot_before: true
+confirm_word: remove
+args:
+  names:
+    type: list[package_name]
+    max_items: 10
+dry_run: ["/usr/bin/apt-get", "remove", "--simulate", "{names}"]
+execute: ["/usr/bin/apt-get", "remove", "-y", "{names}"]
+parse_dry_run: apt_simulate
+explain: |
+  I'll remove {names} from your computer.
+  Other programs that depend on them may stop working, so check the
+  list below before you agree.

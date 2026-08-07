@@ -1,0 +1,12 @@
+verb: svc.restart
+summary: "Restart {name}"
+risk: medium
+snapshot_before: true
+args:
+  name:
+    type: service_name
+dry_run: ["/usr/bin/systemctl", "show", "--property=Description", "{name}"]
+execute: ["/usr/bin/systemctl", "restart", "{name}"]
+explain: |
+  I'll stop {name} and start it again.
+  Anything using it will be briefly interrupted.

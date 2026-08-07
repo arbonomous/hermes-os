@@ -9,9 +9,9 @@
 | 1 | Architecture + safety + UX documents | `docs/` | ✅ done |
 | 2 | First-boot wizard design | `docs/` | ✅ done |
 | 3 | Tool surface + verb catalogue | `docs/` | ✅ done |
-| 4 | `SOUL.md` personality | `soul/` | ▶ next |
-| 5 | Installer design | `docs/` | pending |
-| 6 | `hermesctl` working prototype | `broker/` | pending |
+| 4 | `SOUL.md` personality | `soul/` | ✅ done |
+| 5 | Installer design + preflight | `installer/` | ✅ 21 tests |
+| 6 | `hermesctl` core (validate/verbs/cards/audit) | `broker/` | ✅ 106 tests |
 | 7 | `snapshotd` btrfs round trip | `snapshot/` | pending |
 | 8 | First-boot wizard implementation | `firstboot/` | pending |
 | 9 | Convert-existing-Ubuntu script | `installer/` | pending |

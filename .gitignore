@@ -33,3 +33,4 @@ verbs.d/local/
 .env
 *.key
 *.pem
+broker/.venv/

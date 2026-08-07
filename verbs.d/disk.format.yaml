@@ -1,0 +1,13 @@
+verb: disk.format
+summary: "Erase the disk {target}"
+risk: critical
+snapshot_before: true
+confirm_word: "erase"
+consequence: |
+  Everything on {target} will be deleted permanently.
+args:
+  target:
+    type: device
+execute: ["/usr/sbin/mkfs.ext4", "-F", "{target}"]
+explain: |
+  I'll erase {target} completely and set it up as a fresh empty disk.
