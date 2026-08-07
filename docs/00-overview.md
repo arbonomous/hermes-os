@@ -43,7 +43,26 @@ safety must be expressed in friendly language, never as a wall of jargon.
 | Gentle teaching | Onboarding teaches *how to ask*, with worked examples |
 | Never intimidating | Patient tone, no shaming, no "RTFM", always an escape hatch |
 
-## 3. Non-goals for v0.1
+## 3. The thing that makes it yours
+
+HermesOS is not a fixed set of features you learn to operate. It is a system
+that **grows abilities as you ask for them.**
+
+When you want something it can't do yet, it doesn't fail — it proposes:
+*"I don't know how to do this yet. Here's exactly what I'd need to learn.
+Want to teach me?"* You see the literal command, in plain language, before
+you agree. Say yes and the ability is permanent, listable, and removable.
+
+Six months in, your HermesOS will have abilities no other HermesOS has,
+because they were shaped by what you actually asked for. That is the point of
+the whole project: **an operating system that converges on you**, instead of
+you converging on it.
+
+Every one of those abilities arrived through a card you read and approved, is
+written in your notebook, and can be taken back with *"forget how to do that"*.
+Full mechanism in `02-safety-model.md` §5.
+
+## 4. Non-goals for v0.1
 
 Explicitly out of scope, so we don't drown:
 
@@ -54,7 +73,7 @@ Explicitly out of scope, so we don't drown:
 - No fork of Hermes Agent. We ship configuration, wrappers, and a personality —
   upstream stays upstream so it keeps updating cleanly.
 
-## 4. The three surfaces a user touches
+## 5. The three surfaces a user touches
 
 1. **The greeting** — what appears when the machine boots. Warm, short, offers
    three things to try.
@@ -67,7 +86,7 @@ Explicitly out of scope, so we don't drown:
 Everything else — systemd, apt, btrfs, ollama — is machinery the user should
 never have to see, but that an advanced user can always drop into with `!shell`.
 
-## 5. Glossary (for the docs, and for the user)
+## 6. Glossary (for the docs, and for the user)
 
 | Term we use with the user | What it really is |
 |---|---|
@@ -82,14 +101,15 @@ We never say: sudo, systemd unit, apt transaction, subvolume, PATH, daemon —
 unless the user asks a question that uses those words first. Then we mirror
 their vocabulary.
 
-## 6. Document map
+## 7. Document map
 
 | File | Contents |
 |---|---|
 | `00-overview.md` | This file — vision, contract, non-goals |
 | `01-architecture.md` | System layers, components, boot flow |
 | `02-safety-model.md` | Approvals, capabilities, audit, rollback (detail) |
-| `03-ux-model.md` | First boot, conversation UX, error translation |
+| `03-ux-model.md` | Tone, error translation, conversation surface |
+| `07-first-boot.md` | The first-boot wizard, screen by screen |
 | `04-tools.md` | The exact tool surface + safety wrappers |
 | `05-soul.md` | Hermes' system-level personality |
 | `06-install.md` | Installer / converter script design |

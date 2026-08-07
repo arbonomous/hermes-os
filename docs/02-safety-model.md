@@ -266,7 +266,85 @@ Honesty about the limits of the safety net is part of the safety net.
 
 ---
 
-## 5. Threat model (brief, honest)
+## 5. Growing capability — how HermesOS learns
+
+A frozen verb list cannot deliver "customize your computer by talking to it".
+An unrestricted agent cannot be safe. HermesOS resolves this with a third
+path: **the verb set grows, one deliberate consent at a time, and never
+shrinks your understanding of what your machine can do.**
+
+### 5.1 The teaching moment
+
+When the user asks for something no verb covers, Hermes does **not** fail and
+does **not** improvise a shell command. It writes a *proposal*:
+
+```
+  ┌──────────────────────────────────────────────────────┐
+  │  I don't know how to do this yet — want to teach me?  │
+  │                                                      │
+  │  YOU ASKED                                           │
+  │    "make the fans quieter when the laptop is cool"   │
+  │                                                      │
+  │  WHAT I'D NEED TO LEARN                              │
+  │    A new ability called "fan.set-profile" that can   │
+  │    change the cooling profile. It would run:         │
+  │                                                      │
+  │      /usr/bin/asusctl fan-curve --set quiet          │
+  │                                                      │
+  │  WHAT THAT MEANS                                     │
+  │    Controls how fast your fans spin. Reversible —    │
+  │    you can always set it back to automatic.          │
+  │    I'd class this as MEDIUM risk, so I'll still ask  │
+  │    you each time before I use it.                    │
+  │                                                      │
+  │  IF YOU SAY YES                                      │
+  │    I'll remember this permanently. You can see       │
+  │    everything I've learned by saying "what can you   │
+  │    do?", and remove any of it with "forget how to    │
+  │    do X".                                            │
+  │                                                      │
+  │  [Y] Teach me   [N] No   [?] Explain the command     │
+  └──────────────────────────────────────────────────────┘
+```
+
+Approved proposals are written to `/etc/hermesos/verbs.d/local/`, the manifest
+is re-signed, and the ability is permanent, reusable, listable, and revocable.
+**Your machine ends up with a verb set shaped like your life.** Two HermesOS
+boxes six months apart will not have the same abilities — that is the point.
+
+### 5.2 Rules that make learning safe
+
+| Rule | Why |
+|---|---|
+| Proposals show the **literal command, expanded by default** | Normal cards hide it; teaching cards never do. You are granting a power — you see exactly what it is |
+| Learned verbs start at **minimum `medium` risk** | Learning something never makes it auto-approve. First use still asks |
+| Learned verbs are **re-checked against the forbidden set** at proposal time *and* every execution | No learned verb can ever reach sudoers, the policy files, the audit log, or the agent's own leash |
+| A proposal **cannot be executed in the turn it is approved** | One beat of separation between "yes, learn that" and "yes, do that now". Two consents, not one |
+| Proposals are **rate-limited** (default 3/hour) | Prevents an injected or confused model from flooding you into fatigue |
+| The command must resolve to an **existing binary on disk** | No learning "download this and run it" |
+| Every learned verb is tagged `origin: learned` in the audit | You can always tell shipped abilities from taught ones |
+
+### 5.3 Reviewing what it knows
+
+- **"What can you do?"** → grouped list: *shipped* abilities vs *things you
+  taught me*, each with when it was learned and last used.
+- **"Forget how to do X"** → removes the verb file, re-signs the manifest,
+  logs it. Instant, no side effects.
+- **Monthly nudge:** *"You taught me 4 things last month, and I haven't used 2
+  of them. Want to review?"* Unused power gets pruned by default, not
+  accumulated silently.
+
+### 5.4 The honest limit
+
+This makes the system *arbitrarily capable over time* while keeping every
+increment consensual and reversible. It does **not** make it safe against a
+user who approves everything without reading. Nothing can. What it guarantees
+is that no capability ever appears without a card, a log line, and a way to
+take it back.
+
+---
+
+## 6. Threat model (brief, honest)
 
 **In scope, mitigated:**
 - Model hallucinates a destructive command → verb allowlist + approval card

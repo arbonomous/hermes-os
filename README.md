@@ -30,6 +30,7 @@ word away, for when you want it.
 | [01-architecture](docs/01-architecture.md) | Layers, components, privilege model, boot flow |
 | [02-safety-model](docs/02-safety-model.md) | Capabilities, approvals, audit, rollback, threat model |
 | [03-ux-model](docs/03-ux-model.md) | Tone, error translation, conversation surface |
+| [07-first-boot](docs/07-first-boot.md) | The first-boot wizard, screen by screen |
 | 04-tools | *(next)* The verb surface and safety wrappers |
 | 05-soul | *(next)* Hermes' system personality |
 | 06-install | *(next)* Installer / converter script |
