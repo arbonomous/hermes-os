@@ -12,7 +12,7 @@
 | 4 | `SOUL.md` personality | `soul/` | ✅ done |
 | 5 | Installer design + preflight | `installer/` | ✅ 21 tests |
 | 6 | `hermesctl` core + executor + snapshot gate | `broker/` | ✅ 156 tests |
-| 7 | btrfs round trip **on real hardware** | `snapshot/` | pending — code written, never run on btrfs |
+| 7 | btrfs round trip on real hardware | `snapshot/` + `integration/` | ✅ 22 assertions in a Linux VM |
 | 8 | First-boot wizard implementation | `firstboot/` | pending |
 | 9 | Convert-existing-Ubuntu script | `installer/` | pending |
 | 10 | Beginner documentation | `docs/` | pending |

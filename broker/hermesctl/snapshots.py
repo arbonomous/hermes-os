@@ -40,7 +40,11 @@ class Snapshot:
 
 
 def _now_name(prefix: str = "before") -> str:
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+    # Microsecond precision: two snapshots requested within the same second
+    # must never collide on name, or the second create() would target an
+    # existing read-only subvolume and btrfs would (mis)report
+    # "Read-only file system". Caught on a real VM, not in unit tests.
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f")
     return f"{prefix}-{stamp}"
 
 
@@ -83,19 +87,42 @@ class BtrfsBackend(SnapshotBackend):
     def available(self) -> bool:
         if not shutil.which("btrfs"):
             return False
-        r = _run(["/usr/bin/findmnt", "-no", "FSTYPE", str(self.root)], timeout=10)
+        # --target is required: findmnt only matches a path that is exactly a
+        # mountpoint, and root is normally a *subvolume* underneath one
+        # (/@ on the ISO layout). Without it this returns 1 on real btrfs and
+        # the backend silently disables itself. Found on a live VM, not in
+        # unit tests — the doubles never called findmnt.
+        r = _run(["/usr/bin/findmnt", "-no", "FSTYPE", "--target", str(self.root)],
+                 timeout=10)
         return r.returncode == 0 and r.stdout.strip() == "btrfs"
 
     def create(self, label: str) -> Snapshot:
         name = _now_name()
         target = self.store / name
-        r = _run(["/usr/bin/btrfs", "subvolume", "snapshot", "-r",
-                  str(self.root), str(target)])
-        if r.returncode != 0:
+        if target.exists():
+            # Defensive: even with microsecond names, never try to snapshot
+            # onto an existing (read-only) subvolume — btrfs would misreport
+            # "Read-only file system". Surface the real cause instead.
             raise SnapshotError(
                 "I couldn't make a restore point, so I've stopped before "
                 "changing anything.\n\n"
-                f"The disk tool said: {r.stderr.strip() or 'no reason given'}"
+                f"A restore point called {name} already exists."
+            )
+        r = _run(["/usr/bin/btrfs", "subvolume", "snapshot", "-r",
+                  str(self.root), str(target)])
+        if r.returncode != 0:
+            # btrfs may say "Read-only file system" when it actually means a
+            # name collision. Don't pass that through verbatim — say what
+            # happened and what to do.
+            if "Read-only" in r.stderr and not target.exists():
+                msg = ("the disk is too full to make a restore point, so I've "
+                       "stopped before changing anything.")
+            else:
+                msg = ("the disk tool wouldn't let me: "
+                       f"{r.stderr.strip() or 'no reason given'}")
+            raise SnapshotError(
+                "I couldn't make a restore point, so I've stopped before "
+                f"changing anything.\n\n{msg}"
             )
         return Snapshot(name=name, backend=self.name, created=_utcnow(), label=label)
 

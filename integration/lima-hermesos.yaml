@@ -1,0 +1,38 @@
+# Minimal Ubuntu 24.04 VM for HermesOS integration tests.
+#
+#   limactl start --name=hermesos integration/lima-hermesos.yaml
+#   limactl shell hermesos
+#
+# Only used to get a real Linux kernel with btrfs. Nothing here ships.
+
+images:
+  - location: "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-arm64.img"
+    arch: "aarch64"
+  - location: "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img"
+    arch: "x86_64"
+
+cpus: 2
+memory: "4GiB"
+disk: "20GiB"
+
+mounts:
+  - location: "~/Desktop/Workspace/hermes-os"
+    mountPoint: "/hermes-os"
+    writable: false
+
+provision:
+  - mode: system
+    script: |
+      #!/bin/bash
+      set -eux
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update -qq
+      apt-get install -y -qq btrfs-progs python3-yaml python3-pytest
+
+probes:
+  - description: "btrfs-progs and python deps installed"
+    script: |
+      #!/bin/bash
+      set -eux
+      timeout 300s bash -c "until command -v mkfs.btrfs >/dev/null; do sleep 3; done"
+      timeout 300s bash -c "until python3 -c 'import yaml' 2>/dev/null; do sleep 3; done"

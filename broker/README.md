@@ -11,6 +11,7 @@ to run a **verb**.
 | `dryrun.py` | Parses real tool output into the WHAT CHANGES block |
 | `executor.py` | The only place a command runs. Snapshot gate lives here |
 | `snapshots.py` | btrfs / timeshift / none, behind one interface |
+| `../integration/` | real btrfs round trip inside a Linux VM |
 | `errors.py` | Translates cryptic system errors into plain English |
 | `audit.py` | Hash-chained log + the plain-English mirror |
 
@@ -43,11 +44,19 @@ python3 -m venv .venv && ./.venv/bin/pip install -r requirements.txt
 8. **No cryptic errors.** Known failures are translated with a next step;
    unknown ones are shown verbatim rather than given an invented meaning.
 
+## Verified on real hardware
+
+Item 7 is done. `integration/test_btrfs_roundtrip.py` builds a loopback
+btrfs filesystem in a Lima VM and proves create/list/restore, read-only
+snapshots, point-in-time independence, and a 200 MB CoW snapshot in ~9 ms.
+
+What the VM caught that unit tests could not:
+  · `findmnt` needs `--target`, else it reports False on a real subvolume
+  · `_now_name()` used second precision → two quick snapshots collided, hit
+    an existing read-only subvolume, and btrfs misreported
+    "Read-only file system". Now microsecond precision + a collision guard.
+
 ## Not built yet
 
 The CLI entry point, the policy engine's trusted-mode timer, and `undo` as a
 user-facing verb (the backends support restore; nothing calls it yet).
-
-`snapshots.py` has never run against a real btrfs filesystem — the backends
-are written and unit-tested behind doubles, but the round trip needs a VM.
-That is roadmap item 7 and it is not done.
