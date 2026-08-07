@@ -11,8 +11,8 @@
 | 3 | Tool surface + verb catalogue | `docs/` | ✅ done |
 | 4 | `SOUL.md` personality | `soul/` | ✅ done |
 | 5 | Installer design + preflight | `installer/` | ✅ 21 tests |
-| 6 | `hermesctl` core (validate/verbs/cards/audit) | `broker/` | ✅ 106 tests |
-| 7 | `snapshotd` btrfs round trip | `snapshot/` | pending |
+| 6 | `hermesctl` core + executor + snapshot gate | `broker/` | ✅ 156 tests |
+| 7 | btrfs round trip **on real hardware** | `snapshot/` | pending — code written, never run on btrfs |
 | 8 | First-boot wizard implementation | `firstboot/` | pending |
 | 9 | Convert-existing-Ubuntu script | `installer/` | pending |
 | 10 | Beginner documentation | `docs/` | pending |
