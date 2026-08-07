@@ -14,8 +14,10 @@
 | 6 | `hermesctl` core + executor + snapshot gate | `broker/` | ✅ 156 tests |
 | 7 | btrfs round trip on real hardware | `snapshot/` + `integration/` | ✅ 22 assertions in a Linux VM |
 | 7b | Model verb-routing reality-check (llama3.1 + qwen2.5, 7B) | `agent/` | ✅ 83% both; refusal weak, hallucination + "clean my disk"→format reproduce cross-model |
-| 8 | `hermesd` core loop, wired to reject-and-clarify + ambiguity gate | `agent/` | pending — blocked on #7b findings |
+| 8 | `hermesd` core loop: router (reject-and-clarify + ambiguity gate) + executor wiring | `hermesd_pkg/` | ✅ 16 tests + live 7B demo |
 | 9 | First-boot wizard implementation | `firstboot/` | pending |
+| 10 | Convert-existing-Ubuntu script | `installer/` | pending |
+| 11 | Beginner documentation | `docs/` | pending |
 | 10 | Convert-existing-Ubuntu script | `installer/` | pending |
 | 11 | Beginner documentation | `docs/` | pending |
 

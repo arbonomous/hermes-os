@@ -84,7 +84,7 @@ class Executor:
         self.home = home
         self.prompt = prompt
         self.dry_run_only = dry_run_only
-        self._run = runner
+        self._run = runner if runner is not None else subprocess.run
 
     # ── the single entry point ──────────────────────────────────────────
 
