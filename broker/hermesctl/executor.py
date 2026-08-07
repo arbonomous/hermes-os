@@ -21,14 +21,12 @@ does not run.
 """
 from __future__ import annotations
 
-import os
 import subprocess
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Callable
 
 from .audit import AuditLog
-from .cards import render_approval, render_critical, render_refusal
+from .cards import fill, render_approval, render_critical, render_refusal
 from .dryrun import summarise
 from .errors import friendly_failure
 from .snapshots import Snapshot, SnapshotBackend, SnapshotError
@@ -131,7 +129,7 @@ class Executor:
             )
             if not self._approved(card, verb):
                 self.audit.append(verb=verb_name, decision="denied",
-                                  summary=verb.summary.format(**_fmt(values)))
+                                  summary=fill(verb.summary, values))
                 return Result(ok=False, verb=verb_name,
                               message="No problem — I haven't changed anything.")
 
@@ -144,7 +142,7 @@ class Executor:
         if verb.snapshot_before:
             try:
                 snap = self.snapshots.create(
-                    label=verb.summary.format(**_fmt(values))
+                    label=fill(verb.summary, values)
                 )
             except SnapshotError as exc:
                 self.audit.append(verb=verb_name, decision="aborted",
@@ -159,7 +157,7 @@ class Executor:
         self.audit.append(
             verb=verb_name,
             decision="approved",
-            summary=verb.summary.format(**_fmt(values)),
+            summary=fill(verb.summary, values),
             argv=argv,
             exit_code=res.exit_code,
             snapshot=snap.name if snap else None,
@@ -167,7 +165,7 @@ class Executor:
         res.snapshot = snap
         if not res.ok:
             res.message = self._explain_failure(
-                verb, res, snap, summary=verb.summary.format(**_fmt(values))
+                verb, res, snap, summary=fill(verb.summary, values)
             )
         return res
 
@@ -252,7 +250,3 @@ class Executor:
             return "\n\n".join(parts)
         return friendly_failure(summary, res.output, snapshot=snap is not None)
 
-
-def _fmt(values: dict) -> dict:
-    from .cards import _fmt as fmt_one
-    return {k: fmt_one(v) for k, v in values.items()}

@@ -12,7 +12,7 @@ from pathlib import Path
 
 import yaml
 
-from .validate import ArgSpec, ValidationError
+from .validate import ArgSpec
 
 RISK_ORDER = ("safe", "low", "medium", "high", "critical")
 

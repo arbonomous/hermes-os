@@ -8,8 +8,6 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-import pytest
-
 from hermesctl.audit import AuditLog
 from hermesctl.executor import Executor
 from hermesctl.snapshots import NoSnapshots, Snapshot, SnapshotBackend, SnapshotError

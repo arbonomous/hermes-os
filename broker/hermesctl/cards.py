@@ -71,12 +71,12 @@ def render_approval(
     """
     body: list[str] = []
 
-    headline = verb.summary.format(**{k: _fmt(v) for k, v in values.items()})
+    headline = fill(verb.summary, values)
     body.append(headline)
     body.append("")
 
     body.append("WHAT THIS DOES")
-    body.extend(_wrap(verb.explain.format(**{k: _fmt(v) for k, v in values.items()})))
+    body.extend(_wrap(fill(verb.explain, values)))
     body.append("")
 
     body.append("WHAT CHANGES")
@@ -117,7 +117,7 @@ def render_critical(verb: Verb, values: dict, *, changes: str, argv: list[str]) 
             "refusing to render a card that understates the risk."
         )
     body: list[str] = []
-    body.extend(_wrap(verb.consequence.format(**{k: _fmt(v) for k, v in values.items()}), indent=""))
+    body.extend(_wrap(fill(verb.consequence, values), indent=""))
     body.append("")
     body.extend(_wrap(changes, indent=""))
     body.append("")
@@ -174,7 +174,8 @@ def render_refusal(reason: str) -> str:
     )
 
 
-def _fmt(value) -> str:
+def humanise(value) -> str:
+    """One value as a person would say it: [a, b] -> "a and b"."""
     if isinstance(value, list):
         if len(value) == 1:
             return str(value[0])
@@ -182,3 +183,8 @@ def _fmt(value) -> str:
             return f"{value[0]} and {value[1]}"
         return ", ".join(str(v) for v in value[:-1]) + f", and {value[-1]}"
     return str(value)
+
+
+def fill(template: str, values: dict) -> str:
+    """Render a verb template with human-readable values."""
+    return template.format(**{k: humanise(v) for k, v in values.items()})

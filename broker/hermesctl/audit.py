@@ -113,7 +113,7 @@ class AuditLog:
             if decision == "approved":
                 line = f"{when} — You approved: {r.get('summary', verb)}."
                 if r.get("snapshot"):
-                    line += f"\n    I made a restore point first."
+                    line += "\n    I made a restore point first."
                 if r.get("exit_code") == 0:
                     line += " It worked."
                 elif r.get("exit_code") is not None:
