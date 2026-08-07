@@ -1,0 +1,35 @@
+# Build artifacts
+*.iso
+*.img
+*.squashfs
+build/
+dist/
+out/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local state — never commit
+*.log
+audit.jsonl
+audit.txt
+manifest.sha256
+verbs.d/local/
+
+# Secrets
+.env
+*.key
+*.pem

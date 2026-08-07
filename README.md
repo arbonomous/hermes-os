@@ -31,9 +31,11 @@ word away, for when you want it.
 | [02-safety-model](docs/02-safety-model.md) | Capabilities, approvals, audit, rollback, threat model |
 | [03-ux-model](docs/03-ux-model.md) | Tone, error translation, conversation surface |
 | [07-first-boot](docs/07-first-boot.md) | The first-boot wizard, screen by screen |
-| 04-tools | *(next)* The verb surface and safety wrappers |
+| [04-tools](docs/04-tools.md) | The 61 shipped verbs, wrappers, forbidden set |
 | 05-soul | *(next)* Hermes' system personality |
 | 06-install | *(next)* Installer / converter script |
+
+Also: [ROADMAP](ROADMAP.md) · [CONTRIBUTING](CONTRIBUTING.md)
 
 ## The one-paragraph architecture
 
