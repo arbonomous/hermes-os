@@ -32,8 +32,8 @@ word away, for when you want it.
 | [03-ux-model](docs/03-ux-model.md) | Tone, error translation, conversation surface |
 | [07-first-boot](docs/07-first-boot.md) | The first-boot wizard, screen by screen |
 | [04-tools](docs/04-tools.md) | The 61 shipped verbs, wrappers, forbidden set |
-| 05-soul | *(next)* Hermes' system personality |
-| 06-install | *(next)* Installer / converter script |
+| [05-soul](soul/SOUL.md) | Hermes' personality ([notes](soul/DESIGN-NOTES.md)) |
+| [06-install](docs/06-install.md) | ISO + converter, plan screen, uninstall |
 
 Also: [ROADMAP](ROADMAP.md) · [CONTRIBUTING](CONTRIBUTING.md)
 
