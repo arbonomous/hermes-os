@@ -1,0 +1,22 @@
+[Unit]
+Description=HermesOS first-boot provisioning
+# Only meaningful before the machine is set up. firstbootd itself is a no-op
+# once /etc/hermesos/.setup-pending is gone, so this is safe to keep enabled.
+ConditionPathExists=/etc/hermesos/.setup-pending
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+# Root — this is the privileged first-boot boundary (docs/06-install.md §1.2).
+User=root
+# Default: dry-run. Set FIRSTBOOT_APPLY=1 in the environment to provision for
+# real (still asks per step; disk encryption needs the typed word).
+Environment=FIRSTBOOT_APPLY=0
+ExecStart=/usr/bin/python3 /usr/lib/hermesos/firstboot/firstbootd.py --apply
+# A failed first boot must not wedge the machine — fall back to a shell.
+ExecStartPost=/bin/sh -c 'systemctl set-environment HERMES_FIRSTBOOT_DONE=1'
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

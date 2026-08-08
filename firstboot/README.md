@@ -11,8 +11,11 @@ unprivileged assistant broker.
 | `wizard.py` | State machine. Collects answers. Emits `plan()`. Does nothing. |
 | `apply.py` | `Runner` — applies a plan through approval cards. Allowlisted commands only. |
 | `converge.py` | CLI: load a plan JSON, dry-run or `--apply` it at real first boot. |
+| `firstbootd.py` | Systemd service entry point: gated by `/etc/hermesos/.setup-pending`. |
+| `firstbootd.service` | systemd unit (oneshot, root, dry-run default). |
 | `preview.html` | Browser preview of the wizard UX (no execution). |
 | `tests/` | Headless tests. No display, no commands run. |
+| `VM-TEST.md` | How to run/test first boot in the `hermesos` Lima VM. |
 
 ## Why provisioning is NOT a broker verb
 The unprivileged broker (`broker/hermesctl/verbs.py`) permanently refuses

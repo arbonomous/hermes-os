@@ -144,7 +144,12 @@ class Runner:
             ok = isinstance(answer, str) and answer.strip() == confirm
         else:
             answer = self.prompt(f"Proceed with {verb}? [y/N] ")
-            ok = answer is True
+            # The prompt returns the raw answer (bool from a test stub, or a
+            # string from a real input() prompt). Normalise both to a yes/no.
+            if isinstance(answer, str):
+                ok = answer.strip().lower() in ("y", "yes")
+            else:
+                ok = answer is True
 
         if not ok:
             rec = {"verb": verb, "ran": False, "decision": "skipped"}
