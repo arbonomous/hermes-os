@@ -1,31 +1,47 @@
-# firstboot/
+# firstboot/ — the first-boot provisioning layer
 
-The first-boot wizard — the five-minutes-that-decide-everything experience.
+The wizard (`wizard.py`) collects answers and emits a plan (`plan()`) of
+broker-flavoured intents. Those intents are turned into real actions here,
+in the privileged first-boot runner — a separate trust boundary from the
+unprivileged assistant broker.
 
-Spec: `docs/07-first-boot.md` (screen-by-screen copy).
-
+## Files
 | File | Job |
 |---|---|
-| `wizard.py` | The state machine. One `SCREENS` list is the single source of truth for every screen's copy, options, and safe default. No model, no disk, no network — pure state, so it's fully testable headless. |
-| `preview.html` | The *same* `SCREENS` data, rendered in the browser, fully keyboard-navigable. Open it, click through, confirm the pixels. |
-| `tests/` | 12 tests: one-question-per-screen, safe default reachable by Enter, T-escape always available, validation. |
+| `wizard.py` | State machine. Collects answers. Emits `plan()`. Does nothing. |
+| `apply.py` | `Runner` — applies a plan through approval cards. Allowlisted commands only. |
+| `converge.py` | CLI: load a plan JSON, dry-run or `--apply` it at real first boot. |
+| `preview.html` | Browser preview of the wizard UX (no execution). |
+| `tests/` | Headless tests. No display, no commands run. |
 
-## See it live
+## Why provisioning is NOT a broker verb
+The unprivileged broker (`broker/hermesctl/verbs.py`) permanently refuses
+`useradd`, `passwd`, `chpasswd`, `curl`, `wget`, `mkfs`, … — by design, so the
+assistant can never escalate or fetch-and-execute. Creating your account,
+setting locale, and downloading the model are *provisioning* done once as
+root at first boot. Different boundary → different module. See `apply.py`'s
+module docstring.
 
-    python3 -m http.server 8123     # from this dir
-    # open http://localhost:8123/preview.html
+## Safety properties (proven in tests)
+- `runner.dry_run` is the default — it renders every card + exact command and
+  runs nothing.
+- `disk.encrypt` is gated behind the typed word `encrypt-this-disk`; anything
+  else is skipped.
+- Every step is logged to `/var/log/hermesos/firstboot.jsonl`.
 
-Keys: `↑ ↓` choose · `Enter` confirm · `?` help · `T` plain terminal · `Esc` back/skip.
+## Testing it for real — without touching your Mac
+There is a prepared Lima VM, `hermesos` (Ubuntu 24.04 arm64, btrfs in kernel,
+passwordless sudo, repo mounted at `/hermes-os`). It is throwaway and isolated
+from your host — a perfect sandbox for first-boot testing. See `VM-TEST.md`.
 
-## Run the tests
+## Run a plan through the runner (programmatically, safe)
+```python
+from firstboot.wizard import Wizard
+from firstboot.apply import Runner
 
-    python3 -m pytest tests/ -p no:xprocess
-
-(The `-p no:xprocess` flag just disables an unrelated plugin the broker pulls in.)
-
-## What's deliberately NOT here yet
-
-The wizard collects answers. Wiring those answers to real setup steps — creating
-the account, writing the locale, starting the model download, handing off to
-`hermesd` — belongs to the installer/OS layer and is not in this directory. This
-module only decides *what the user chose*.
+w = Wizard()
+while not w.done:           # ...drive the screens...
+    w.confirm()
+plan = w.plan()             # list of intents
+results = Runner(plan=plan, prompt=lambda c: True).apply()  # dry-run by default
+```

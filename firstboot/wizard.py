@@ -278,6 +278,63 @@ class Wizard:
         self.went_terminal = True
         return "terminal"
 
+    # ── output: a broker-flavored setup plan ─────────────────────────────
+    # The wizard stays dumb: it emits intents, it never runs anything. Each
+    # intent maps to a real broker verb (user.create, model.download, …) that
+    # HermesOS will route through the approval-card gate before any disk
+    # write or command runs. This is the only place the UI turns answers into
+    # actions — and it is fully testable with no display.
+    def plan(self) -> list[dict]:
+        """Emit ordered, broker-shaped setup intents from collected answers.
+
+        Returns [] until the wizard is ``done`` (or escaped), so the OS never
+        acts on a half-finished run. Intents use the broker verb namespace so
+        the hermesctl layer can validate + execute them unchanged.
+        """
+        if not self.done:
+            return []
+        a = self.answers
+        steps: list[dict] = []
+
+        # 1. User account — always created when the wizard completes.
+        steps.append({
+            "verb": "user.create",
+            "risk": "medium",
+            "params": {
+                "name": a.get("account_name", "user"),
+                "password_set": bool(a.get("account_password")),
+            },
+        })
+
+        # 2. Language + timezone — low-risk localization intent.
+        steps.append({
+            "verb": "locale.set",
+            "risk": "safe",
+            "params": {
+                "language": a.get("language", "en"),
+                "timezone_source": a.get("time", "detected"),
+            },
+        })
+
+        # 3. Optional disk encryption — high-risk, only if the user opted in.
+        if a.get("encrypt") == "yes":
+            steps.append({
+                "verb": "disk.encrypt",
+                "risk": "high",
+                "params": {"scope": "root"},
+            })
+
+        # 4. Brain — model download intent (no network call here).
+        brain = a.get("brain", "balanced")
+        if brain != "skip":
+            steps.append({
+                "verb": "model.download",
+                "risk": "safe",
+                "params": {"brain": brain},
+            })
+
+        return steps
+
     # ── validation ───────────────────────────────────────────────────────
     def _validate(self, scr: dict, val: str) -> tuple[bool, str]:
         rule = scr.get("validate")
