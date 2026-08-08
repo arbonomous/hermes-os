@@ -23,6 +23,8 @@ answers; firstbootd/converge turns that into real actions behind approval cards.
 """
 from __future__ import annotations
 
+import os
+import select
 import sys
 import termios
 import tty
@@ -154,9 +156,10 @@ def run() -> Wizard:
             sys.stdout.write("\033[2J\033[H")  # clear + home
             sys.stdout.write(render(w, picker, help_on) + "\n")
             sys.stdout.flush()
-            ch = sys.stdin.read(1)
-            if not ch:
+            raw = os.read(fd, 1)
+            if not raw:
                 break
+            ch = raw.decode("utf-8", "replace")
             if picker is not None:
                 if ch in ("\x1b",):  # Esc closes picker
                     picker = None
@@ -210,22 +213,37 @@ def run() -> Wizard:
             if ch in ("\x1b",):
                 # On a progress/download screen, Esc means "skip" (advance).
                 # Otherwise it's the prefix of an arrow key; read the rest.
-                # Use a non-blocking read so a lone Esc (no following bytes)
-                # cannot freeze the wizard forever — treat it as skip too.
+                # Use an unbuffered os.read + non-blocking select so a lone Esc
+                # (no following bytes) cannot freeze the wizard, and so the
+                # escape sequence is parsed correctly (buffered stdin drops it).
                 if scr["kind"] == "progress":
                     w.confirm()
                     help_on = False
                     continue
-                import select
-                rlist, _, _ = select.select([sys.stdin], [], [], 0.15)
+                rlist, _, _ = select.select([fd], [], [], 0.2)
                 if rlist:
-                    nxt = sys.stdin.read(2)
-                    if nxt == "[A":
+                    # After Esc, an arrow key is "\x1b[A"/"\x1b[B"/etc. Read the
+                    # next 2 bytes ("[A") and decode the direction. A lone Esc
+                    # (no follow-up within the timeout) is ignored — it can't
+                    # freeze the wizard.
+                    seq = b""
+                    try:
+                        seq = os.read(fd, 2)
+                    except OSError:
+                        continue
+                    if seq[:1] != b"[":
+                        # not an arrow sequence (e.g. lone Esc); ignore
+                        continue
+                    if seq[1:2] == b"A":
                         w.move(-1)
-                    elif nxt == "[B":
+                    elif seq[1:2] == b"B":
                         w.move(1)
+                    elif seq[1:2] == b"C":
+                        w.move(1)
+                    elif seq[1:2] == b"D":
+                        w.move(-1)
                 else:
-                    # lone Esc on a non-progress screen: ignore, stay put
+                    # lone Esc with no follow-up: ignore
                     continue
             if scr["kind"] in ("text", "password"):
                 if ch.isprintable() and ch not in ("\n", "\r"):
