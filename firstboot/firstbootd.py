@@ -35,15 +35,6 @@ PENDING_FLAG = Path("/etc/hermesos/.setup-pending")
 LOG_DIR = Path(os.environ.get("HERMESOS_LOG_DIR", "/var/log/hermesos"))
 
 
-def _prompt(text: str) -> object:
-    """Terminal prompt for the live service. y/N for normal, typed word for
-    disk encryption (handled inside Runner via the same callable)."""
-    try:
-        return input(text).strip()
-    except EOFError:
-        return False
-
-
 def run_wizard() -> Wizard:
     """Drive the wizard. When attached to a real terminal (a human at first
     boot), launch the interactive TUI (tui.py) so they actually see and drive
@@ -105,9 +96,12 @@ def main() -> int:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     (LOG_DIR / "firstboot.plan.json").write_text(json.dumps(plan, indent=2))
 
-    # Unattended boots can't ask; auto-confirm every step. Interactive boots
-    # use the live TUI (which calls tui.run, not this path) and a real prompt.
-    prompt = (lambda c: True) if (not interactive) else _prompt
+    # First boot: the wizard screens ARE the consent flow, so the plan it
+    # emits is already approved by the human. Auto-confirm every step instead
+    # of re-prompting (the per-step approval cards belong to the running
+    # hermesd, not the one-time setup). This also lets an unattended boot
+    # provision itself without a human at the keyboard.
+    prompt = lambda c: True
 
     runner = Runner(plan=plan, prompt=prompt, dry_run=not apply)
     results = runner.apply()
