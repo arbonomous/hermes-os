@@ -14,7 +14,9 @@ unprivileged assistant broker.
 | `firstbootd.py` | Systemd service entry point: gated by `/etc/hermesos/.setup-pending`. |
 | `firstbootd.service` | systemd unit (oneshot, root, dry-run default). |
 | `preview.html` | Browser preview of the wizard UX (no execution). |
-| `tests/` | Headless tests. No display, no commands run. |
+| `tui.py` | Real terminal UI: renders SCREENS, keyboard nav (↑/↓, Enter, type, K, ?, T). |
+| `tui_demo.py` | Frame-by-frame walkthrough (no pty needed) — see it run without a terminal. |
+| `tests/test_tui.py` | Render fidelity + password masking + help overlay + stale-error tests. |
 | `VM-TEST.md` | How to run/test first boot in the `hermesos` Lima VM. |
 
 ## Why provisioning is NOT a broker verb

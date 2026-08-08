@@ -208,7 +208,12 @@ def run() -> Wizard:
                 help_on = not help_on
                 continue
             if ch in ("\x1b",):
-                # arrow key prefix; consume the rest
+                # On a progress/download screen, Esc means "skip" (advance).
+                # Otherwise it's the prefix of an arrow key; read the rest.
+                if scr["kind"] == "progress":
+                    w.confirm()
+                    help_on = False
+                    continue
                 nxt = sys.stdin.read(2)
                 if nxt == "[A":
                     w.move(-1)
