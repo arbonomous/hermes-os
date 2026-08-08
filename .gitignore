@@ -4,6 +4,8 @@
 *.qcow2
 *.vmlinuz
 *.initrd
+hermesos-vmlinuz
+hermesos-initrd
 *.squashfs
 build/
 dist/
