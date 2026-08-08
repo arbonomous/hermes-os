@@ -37,3 +37,4 @@ broker/.venv/
 
 # Eval measurements — these are outputs, not source
 eval_results.json
+**/eval_results.json
