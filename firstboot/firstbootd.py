@@ -128,4 +128,16 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    try:
+        raise SystemExit(main())
+    except SystemExit:
+        raise
+    except Exception as exc:  # last-resort: never wedge the machine silently
+        try:
+            LOG_DIR.mkdir(parents=True, exist_ok=True)
+            (LOG_DIR / "firstboot.debug").write_text(
+                f"firstbootd crashed: {type(exc).__name__}: {exc}\n")
+        except Exception:
+            pass
+        # fall back to a plain shell so the human isn't stranded
+        raise SystemExit(0)
