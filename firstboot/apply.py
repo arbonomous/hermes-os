@@ -166,18 +166,17 @@ class Runner:
         # binary guard does not apply here; this is the privileged boundary.
         outputs = []
         for argv in argv_lists:
-            # Password steps pipe the secret via stdin, never argv.
-            stdin = None
-            if verb == "user.create":
-                # password_set is a flag only; the wizard does not hold the
-                # plaintext (it was typed, never stored). A first-boot reset
-                # flow would collect it; for v0.1 we leave the account locked
-                # for a password to be set on first login.
-                pass
-            res = self.runner(
-                argv, shell=False, capture_output=True, text=True,
-                start_new_session=True,
-            )
+            try:
+                res = self.runner(
+                    argv, shell=False, capture_output=True, text=True,
+                    start_new_session=True,
+                )
+            except (FileNotFoundError, OSError) as exc:
+                # Binary missing (e.g. ollama not yet installed) — record the
+                # failure instead of crashing the whole provisioning run.
+                outputs.append({"argv": argv, "returncode": None,
+                                "ok": False, "error": str(exc)})
+                continue
             outputs.append({"argv": argv, "returncode": getattr(res, "returncode", -1),
                             "ok": getattr(res, "returncode", -1) == 0})
         rec = {"verb": verb, "ran": True, "steps": outputs}

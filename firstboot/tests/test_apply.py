@@ -114,3 +114,21 @@ def test_runner_never_constructs_commands_from_unvalidated_text():
     card, argv = STEPS["disk.encrypt"]({"scope": "root", "evil": "rm -rf /"})
     assert argv == [["/usr/sbin/deb-systemd-helper", "enable", "hermesos-encrypt"]]
     assert all("rm -rf" not in line for line in card)
+
+
+def test_missing_binary_is_recorded_not_crashed():
+    # If a provisioning command's binary is absent (e.g. fetch-model not
+    # installed yet), the runner must record the failure and keep going,
+    # never raise out of apply().
+    plan = _complete_plan({})
+    def boom(*a, **k):
+        raise FileNotFoundError("No such file or directory: '/usr/lib/hermesos/fetch-model'")
+    r = Runner(plan=plan, prompt=lambda c: True, dry_run=False, runner=boom)
+    results = r.apply()
+    model = next(x for x in results if x["verb"] == "model.download")
+    assert model["ran"] is True
+    assert model["steps"][0]["ok"] is False
+    assert "error" in model["steps"][0]
+    # a real user step that WAS able to run still records its own result
+    user = next(x for x in results if x["verb"] == "user.create")
+    assert user["ran"] is True
