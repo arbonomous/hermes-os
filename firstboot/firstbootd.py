@@ -59,8 +59,8 @@ def run_wizard() -> Wizard:
     # Headless fallback: accept safe defaults, generated name/password, and
     # auto-confirm every step (unattended provisioning).
     w = Wizard()
-    import getpass
-    name = os.environ.get("FIRSTBOOT_NAME") or getpass.getuser() or "user"
+    # Default account is "hermes" (the OS's own user), never root.
+    name = os.environ.get("FIRSTBOOT_NAME") or "hermes"
     pw = os.environ.get("FIRSTBOOT_PASSWORD") or "changeme-please"  # forced reset on first login
     steps = 0
     while not w.done and steps < 60:
