@@ -124,6 +124,15 @@ def main() -> int:
         PENDING_FLAG.unlink()
     except OSError:
         pass
+
+    # Flush everything to the block device NOW. firstbootd may be the last thing
+    # to run before the VM is hard-stopped (e.g. the user closes QEMU), and the
+    # guest's page cache would otherwise be lost on an unclean power-off. With
+    # cache=none this pushes the writes straight through to the disk image.
+    try:
+        os.sync()
+    except OSError:
+        pass
     return 0
 
 

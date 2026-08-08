@@ -50,6 +50,14 @@ sudo sed -i 's/^127.0.1.1.*/127.0.1.1 hermesos/' "$MNT/etc/hosts" 2>/dev/null ||
 
 echo "==> enable firstboot service + serial console for QEMU viewing"
 sudo ln -sf /etc/systemd/system/firstbootd.service "$MNT/etc/systemd/system/multi-user.target.wants/firstbootd.service"
+# firstbootd owns the serial console (ttyAMA0 under QEMU). The kernel cmdline
+# 'console=ttyAMA0' makes systemd's getty generator auto-spawn a competing
+# serial-getty there; mask it with direct fs ops (chroot systemctl is a no-op
+# without a running init). Mask BOTH the unit and any getty.target.wants symlink.
+sudo rm -f "$MNT/etc/systemd/system/getty.target.wants/serial-getty@ttyAMA0.service"
+sudo rm -f "$MNT/etc/systemd/system/getty.target.wants/getty@ttyAMA0.service"
+sudo ln -sf /dev/null "$MNT/etc/systemd/system/serial-getty@ttyAMA0.service"
+sudo ln -sf /dev/null "$MNT/etc/systemd/system/getty@ttyAMA0.service"
 echo 'GRUB_CMDLINE_LINUX="console=ttyS0"' | sudo tee -a "$MNT/etc/default/grub" >/dev/null
 sudo chroot "$MNT" update-grub >/dev/null 2>&1 || echo "grub cfg warn (non-fatal if EFI missing)"
 

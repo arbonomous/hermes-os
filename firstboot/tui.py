@@ -210,16 +210,23 @@ def run() -> Wizard:
             if ch in ("\x1b",):
                 # On a progress/download screen, Esc means "skip" (advance).
                 # Otherwise it's the prefix of an arrow key; read the rest.
+                # Use a non-blocking read so a lone Esc (no following bytes)
+                # cannot freeze the wizard forever — treat it as skip too.
                 if scr["kind"] == "progress":
                     w.confirm()
                     help_on = False
                     continue
-                nxt = sys.stdin.read(2)
-                if nxt == "[A":
-                    w.move(-1)
-                elif nxt == "[B":
-                    w.move(1)
-                continue
+                import select
+                rlist, _, _ = select.select([sys.stdin], [], [], 0.15)
+                if rlist:
+                    nxt = sys.stdin.read(2)
+                    if nxt == "[A":
+                        w.move(-1)
+                    elif nxt == "[B":
+                        w.move(1)
+                else:
+                    # lone Esc on a non-progress screen: ignore, stay put
+                    continue
             if scr["kind"] in ("text", "password"):
                 if ch.isprintable() and ch not in ("\n", "\r"):
                     w.type_char(ch)

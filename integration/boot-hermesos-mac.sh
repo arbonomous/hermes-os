@@ -24,7 +24,9 @@ echo
 exec qemu-system-aarch64 \
   -machine virt -cpu cortex-a57 -smp 2 -m 2048 \
   -kernel "$KERNEL" -initrd "$INITRD" \
-  -append "console=ttyAMA0,115200 root=/dev/vda1 rw earlycon=pl011,0x9000000 rootdelay=5" \
+  -append "root=/dev/vda1 rw earlycon=pl011,0x9000000 rootdelay=5" \
   -drive file="$IMG",format=qcow2,if=none,id=disk,cache=none,discard=unmap -device virtio-blk-device,drive=disk \
   -netdev user,id=net0 -device virtio-net-device,netdev=net0 \
-  -nographic -serial tcp:127.0.0.1:9999,server,nowait
+  -nographic \
+  -chardev socket,id=ser,host=127.0.0.1,port=9999,server=on,wait=off,logfile=/tmp/hermesos-serial.log,logappend=on \
+  -serial chardev:ser

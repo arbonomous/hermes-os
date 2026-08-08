@@ -5,6 +5,10 @@ Description=HermesOS first-boot provisioning
 ConditionPathExists=/etc/hermesos/.setup-pending
 After=network-online.target
 Wants=network-online.target
+# firstbootd owns the serial console (ttyAMA0 under QEMU). Stop any competing
+# serial getty so it can't steal keystrokes from the wizard.
+Conflicts=serial-getty@ttyAMA0.service getty@ttyAMA0.service
+Before=serial-getty@ttyAMA0.service getty@ttyAMA0.service
 
 [Service]
 Type=oneshot
@@ -21,6 +25,7 @@ TTYVHangup=yes
 StandardInput=tty
 StandardOutput=tty
 StandardError=journal
+ExecStartPre=/bin/sh -c 'systemctl stop serial-getty@ttyAMA0.service 2>/dev/null || true'
 ExecStart=/usr/bin/python3 /usr/lib/hermesos/firstboot/firstbootd.py --apply
 # A failed first boot must not wedge the machine — fall back to a shell.
 ExecStartPost=/bin/sh -c 'systemctl set-environment HERMES_FIRSTBOOT_DONE=1'
