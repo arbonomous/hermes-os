@@ -132,3 +132,19 @@ def test_missing_binary_is_recorded_not_crashed():
     # a real user step that WAS able to run still records its own result
     user = next(x for x in results if x["verb"] == "user.create")
     assert user["ran"] is True
+
+
+def test_user_create_rc9_is_idempotent_ok():
+    # A second first boot re-runs user.create; if the account/home already
+    # exists, useradd exits 9 — that must be treated as already-done (ok),
+    # not a failure that aborts provisioning.
+    plan = [{"verb": "user.create", "risk": "medium",
+              "params": {"name": "hermes", "password_set": True}}]
+    def fake_run(argv, **k):
+        class R: returncode = 9
+        return R()
+    r = Runner(plan=plan, prompt=lambda c: True, dry_run=False, runner=fake_run)
+    res = r.apply()
+    step = res[0]["steps"][0]
+    assert step["returncode"] == 9
+    assert step["ok"] is True  # idempotent: already present is fine

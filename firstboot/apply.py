@@ -177,8 +177,11 @@ class Runner:
                 outputs.append({"argv": argv, "returncode": None,
                                 "ok": False, "error": str(exc)})
                 continue
-            outputs.append({"argv": argv, "returncode": getattr(res, "returncode", -1),
-                            "ok": getattr(res, "returncode", -1) == 0})
+            rc = getattr(res, "returncode", -1)
+            # user.create is idempotent: rc=9 means the account (or its home
+            # dir) already exists from a prior run — treat as already done.
+            ok = (rc == 0) or (verb == "user.create" and rc == 9)
+            outputs.append({"argv": argv, "returncode": rc, "ok": ok})
         rec = {"verb": verb, "ran": True, "steps": outputs}
         self._log(rec)
         return rec
