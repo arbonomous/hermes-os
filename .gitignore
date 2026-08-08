@@ -1,6 +1,9 @@
 # Build artifacts
 *.iso
 *.img
+*.qcow2
+*.vmlinuz
+*.initrd
 *.squashfs
 build/
 dist/
