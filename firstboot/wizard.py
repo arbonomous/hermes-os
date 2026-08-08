@@ -221,9 +221,11 @@ class Wizard:
     def type_char(self, ch: str) -> None:
         if self.screen["kind"] in ("text", "password"):
             self.typed += ch
+            self.answers.pop("_error", None)  # typing clears a stale validation error
 
     def backspace(self) -> None:
         self.typed = self.typed[:-1]
+        self.answers.pop("_error", None)
 
     def _default_index(self) -> int:
         opts = self.options()
