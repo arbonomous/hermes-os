@@ -124,12 +124,14 @@ def test_no_pending_flag_is_a_safe_noop(monkeypatch, capsys):
     assert "plan" not in cap  # Runner never constructed
 
 
-def test_pending_flag_dry_runs_by_default(monkeypatch, capsys):
+def test_pending_flag_headless_auto_applies(monkeypatch, capsys):
+    # No tty in the test harness => unattended boot => auto-apply (provisions
+    # itself). The dry-run default only applies to interactive (tty) boots,
+    # which need a real terminal and are verified live in the VM.
     mod, cap = _load_firstbootd(monkeypatch, pending_exists=True)
     rc = mod.main()
     assert rc == 0
-    assert cap.get("dry_run") is True          # default is dry-run, never applies
-    # flag cleared after run
+    assert cap.get("dry_run") is False         # headless => auto-apply
     assert not Path("/tmp/firstboot-pending-test").exists()
 
 

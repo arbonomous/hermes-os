@@ -47,15 +47,17 @@ def _prompt(text: str) -> object:
 def run_wizard() -> Wizard:
     """Drive the wizard. When attached to a real terminal (a human at first
     boot), launch the interactive TUI (tui.py) so they actually see and drive
-    the setup. When headless (no tty — e.g. a test), walk the screens with
-    safe defaults so the service is still testable without a display.
+    the setup. When headless (no tty — e.g. an unattended/automated boot or a
+    test), walk the screens with safe defaults and auto-confirm, so the
+    machine provisions itself without a human at the keyboard.
     """
     if sys.stdin.isatty():
         # Live, interactive first boot. The TUI owns navigation and returns a
         # completed Wizard whose answers feed the provisioning runner.
         from tui import run as tui_run
         return tui_run()
-    # Headless fallback: accept safe defaults, generated name/password.
+    # Headless fallback: accept safe defaults, generated name/password, and
+    # auto-confirm every step (unattended provisioning).
     w = Wizard()
     import getpass
     name = os.environ.get("FIRSTBOOT_NAME") or getpass.getuser() or "user"
@@ -77,7 +79,11 @@ def main() -> int:
     ap.add_argument("--apply", action="store_true",
                     help="actually provision (default: emit plan + dry-run cards)")
     args = ap.parse_args()
-    apply = args.apply or os.environ.get("FIRSTBOOT_APPLY") == "1"
+    # Apply mode: explicit --apply, or FIRSTBOOT_APPLY=1. When unattended
+    # (no tty), auto-apply so the machine provisions itself; the prompt then
+    # auto-confirms every step. Interactive boots go through the TUI.
+    interactive = sys.stdin.isatty()
+    apply = args.apply or os.environ.get("FIRSTBOOT_APPLY") == "1" or (not interactive)
 
     if not PENDING_FLAG.exists():
         # Already set up — idempotent no-op.
@@ -99,7 +105,11 @@ def main() -> int:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     (LOG_DIR / "firstboot.plan.json").write_text(json.dumps(plan, indent=2))
 
-    runner = Runner(plan=plan, prompt=_prompt, dry_run=not apply)
+    # Unattended boots can't ask; auto-confirm every step. Interactive boots
+    # use the live TUI (which calls tui.run, not this path) and a real prompt.
+    prompt = (lambda c: True) if (not interactive) else _prompt
+
+    runner = Runner(plan=plan, prompt=prompt, dry_run=not apply)
     results = runner.apply()
 
     if not apply:
