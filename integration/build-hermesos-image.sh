@@ -26,7 +26,7 @@ sudo mkdir -p "$MNT"
 sudo mount "$PART" "$MNT"
 
 echo "==> debootstrapping Ubuntu 24.04 (noble)"
-sudo debootstrap --arch=arm64 --include=systemd,systemd-sysv,grub-efi-arm64,linux-generic,openssh-server,python3,locales,btrfs-progs noble "$MNT" http://ports.ubuntu.com/ubuntu-ports >/dev/null 2>&1 || {
+sudo debootstrap --arch=arm64 --include=systemd,systemd-sysv,grub-efi-arm64,linux-generic,initramfs-tools,openssh-server,python3,locales,btrfs-progs noble "$MNT" http://ports.ubuntu.com/ubuntu-ports >/dev/null 2>&1 || {
   echo "debootstrap failed; partial log:"; tail -5 /var/log/bootstrap.log 2>/dev/null; exit 1; }
 
 echo "==> installing HermesOS firstboot layer from $REPO"
@@ -38,8 +38,13 @@ sudo cp "$REPO/firstboot/firstbootd.service" "$MNT/etc/systemd/system/firstbootd
 sudo mkdir -p "$MNT/etc/hermesos"
 sudo touch "$MNT/etc/hermesos/.setup-pending"        # triggers first boot
 
+echo "==> generating initramfs (debootstrap does not create one)"
+# Without this, /boot/initrd.img-* is a dangling symlink and QEMU can't boot.
+sudo chroot "$MNT" /bin/bash -c 'update-initramfs -c -k all 2>/dev/null || \
+  /usr/sbin/update-initramfs -c -k "$(ls /lib/modules | head -1)"' || echo "initramfs warn (non-fatal if modules absent)"
+
 echo "==> basic fstab + hostname"
-echo "/dev/sda1 / ext4 defaults 0 1" | sudo tee "$MNT/etc/fstab" >/dev/null
+echo "/dev/vda1 / ext4 defaults 0 1" | sudo tee "$MNT/etc/fstab" >/dev/null
 echo "hermesos" | sudo tee "$MNT/etc/hostname" >/dev/null
 sudo sed -i 's/^127.0.1.1.*/127.0.1.1 hermesos/' "$MNT/etc/hosts" 2>/dev/null || echo "127.0.1.1 hermesos" | sudo tee -a "$MNT/etc/hosts" >/dev/null
 

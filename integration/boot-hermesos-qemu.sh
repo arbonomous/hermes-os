@@ -1,9 +1,10 @@
 #!/bin/bash
 # boot-hermesos-qemu.sh — boot the HermesOS image under QEMU (aarch64) inside
 # the hermesos Lima VM. Uses the kernel/initrd extracted from the image (GRUB
-# EFI install was skipped), and exposes the boot console on a TCP socket so the
-# first-boot wizard can be driven interactively (e.g. with a telnet client or
-# the drive-console helper).
+# EFI install was skipped). The boot console is captured to a file
+# (/tmp/hermesos-serial.log) and a QEMU monitor socket (/tmp/qemu-mon.sock)
+# lets a driver inject keystrokes via `sendkey` so the first-boot wizard can
+# be driven live and observed.
 set -euo pipefail
 
 IMG=/var/lib/hermesos/hermesos.img
@@ -22,9 +23,9 @@ sudo cp "$INITRD_SRC" "$INITRD"
 sudo umount "$MNT"
 sudo losetup -d "$LOOP"
 
-echo "==> launching QEMU (console on tcp:127.0.0.1:9999)"
-echo "    connect with:  nc -v 127.0.0.1 9999   (or socat - TCP:127.0.0.1:9999)"
-echo "    (the first-boot wizard appears here — drive it live)"
+echo "==> launching QEMU"
+echo "    console log:  sudo tail -f /tmp/hermesos-serial.log"
+echo "    drive with:   python3 /tmp/drive-console.py <name>"
 
 sudo qemu-system-aarch64 \
   -machine virt -cpu cortex-a57 -smp 2 -m 2048 \
@@ -33,4 +34,4 @@ sudo qemu-system-aarch64 \
   -drive file="$IMG",format=raw,if=none,id=disk -device virtio-blk-device,drive=disk \
   -netdev user,id=net0 -device virtio-net-device,netdev=net0 \
   -nographic -serial tcp:127.0.0.1:9999,server,nowait \
-  -monitor none
+  -monitor unix:/tmp/qemu-mon.sock,server,nowait

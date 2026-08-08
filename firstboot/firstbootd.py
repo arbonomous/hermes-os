@@ -28,8 +28,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from firstboot.wizard import Wizard       # noqa: E402
-from firstboot.apply import Runner        # noqa: E402
+# Imports work both as a repo package (`from firstboot.wizard import …`) and
+# when the files are flat-installed (e.g. /usr/lib/hermesos/firstboot/), where
+# they live side by side and import each other directly.
+try:
+    from firstboot.wizard import Wizard       # noqa: E402
+    from firstboot.apply import Runner        # noqa: E402
+except ImportError:
+    from wizard import Wizard                # noqa: E402
+    from apply import Runner                 # noqa: E402
 
 PENDING_FLAG = Path("/etc/hermesos/.setup-pending")
 LOG_DIR = Path(os.environ.get("HERMESOS_LOG_DIR", "/var/log/hermesos"))

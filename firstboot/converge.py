@@ -24,7 +24,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from firstboot.apply import Runner  # noqa: E402
+try:
+    from firstboot.apply import Runner  # noqa: E402
+except ImportError:
+    from apply import Runner          # noqa: E402
 
 
 def _prompt(text: str) -> object:
