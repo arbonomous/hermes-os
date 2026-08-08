@@ -129,3 +129,61 @@ def test_full_walkthrough_completes():
     assert w.answers["language"] == "en"
     assert w.answers["brain"] == "balanced"
     assert w.answers["account_name"] == "Sam"
+
+
+def _complete_wizard() -> Wizard:
+    w = Wizard()
+    steps = 0
+    while not w.done and steps < 50:
+        scr = w.screen
+        if scr["kind"] == "choice":
+            pass
+        elif scr["kind"] in ("text", "password"):
+            w.typed = "Sam" if scr["id"] == "account_name" else "correct-horse-battery"
+        w.confirm()
+        steps += 1
+    return w
+
+
+def test_plan_empty_before_done():
+    # Half-finished run must not emit any actionable intents.
+    w = Wizard()
+    walk_to(w, "brain")
+    assert w.plan() == []
+
+
+def test_plan_default_intents():
+    w = _complete_wizard()
+    plan = w.plan()
+    verbs = [s["verb"] for s in plan]
+    # account + locale always; encryption defaulted to 'no' so absent; brain defaulted
+    assert verbs == ["user.create", "locale.set", "model.download"]
+    # account carries the typed name and a password flag
+    acct = plan[0]
+    assert acct["verb"] == "user.create"
+    assert acct["params"]["name"] == "Sam"
+    assert acct["params"]["password_set"] is True
+    assert acct["risk"] == "medium"
+    # locale intent present
+    assert plan[1]["verb"] == "locale.set"
+    # no disk.encrypt unless opted in
+    assert all(s["verb"] != "disk.encrypt" for s in plan)
+
+
+def test_plan_encryption_opt_in():
+    w = _complete_wizard()
+    w.answers["encrypt"] = "yes"
+    plan = w.plan()
+    enc = [s for s in plan if s["verb"] == "disk.encrypt"]
+    assert len(enc) == 1
+    assert enc[0]["risk"] == "high"
+    # still precedes the model download
+    assert plan.index(enc[0]) < plan.index(next(s for s in plan if s["verb"] == "model.download"))
+
+
+def test_plan_brain_skip_omits_model_download():
+    w = _complete_wizard()
+    w.answers["brain"] = "skip"
+    plan = w.plan()
+    assert all(s["verb"] != "model.download" for s in plan)
+    assert plan[0]["verb"] == "user.create"
