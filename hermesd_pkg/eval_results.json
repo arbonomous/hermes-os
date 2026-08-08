@@ -1,0 +1,390 @@
+{
+  "model": "llama3.1:8b",
+  "total": 42,
+  "correct": 35,
+  "inscope_correct": 27,
+  "inscope_total": 27,
+  "refuse_correct": 8,
+  "refuse_total": 15,
+  "hallucinated": 1,
+  "cases": [
+    {
+      "id": "i01",
+      "cat": "install",
+      "text": "install vlc",
+      "expected": "pkg.install",
+      "got": "pkg.install",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "i02",
+      "cat": "install",
+      "text": "install the firefox web browser",
+      "expected": "pkg.install",
+      "got": "pkg.install",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "i03",
+      "cat": "install",
+      "text": "get me a music player",
+      "expected": "pkg.install",
+      "got": "pkg.install",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "i04",
+      "cat": "install",
+      "text": "add the program gimp",
+      "expected": "pkg.install",
+      "got": "pkg.install",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "i05",
+      "cat": "install",
+      "text": "i want to install spotify",
+      "expected": "pkg.install",
+      "got": "pkg.install",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "i06",
+      "cat": "install",
+      "text": "can you put firefox on here",
+      "expected": "pkg.install",
+      "got": "pkg.install",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "i07",
+      "cat": "install",
+      "text": "i don't have a pdf reader",
+      "expected": "pkg.install",
+      "got": "pkg.install",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "i08",
+      "cat": "install",
+      "text": "i need a way to make video calls",
+      "expected": "pkg.install",
+      "got": "pkg.install",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "r01",
+      "cat": "remove",
+      "text": "remove gimp",
+      "expected": "pkg.remove",
+      "got": "pkg.remove",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "r02",
+      "cat": "remove",
+      "text": "uninstall vlc",
+      "expected": "pkg.remove",
+      "got": "pkg.remove",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "r03",
+      "cat": "remove",
+      "text": "delete the inkscape program",
+      "expected": "pkg.remove",
+      "got": "pkg.remove",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "r04",
+      "cat": "remove",
+      "text": "get rid of thunderbird",
+      "expected": "pkg.remove",
+      "got": "pkg.remove",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "r05",
+      "cat": "remove",
+      "text": "get rid of this app called rhythmbox",
+      "expected": "pkg.remove",
+      "got": "pkg.remove",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "s01",
+      "cat": "service",
+      "text": "restart the printing service",
+      "expected": "svc.restart",
+      "got": "svc.restart",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "s02",
+      "cat": "service",
+      "text": "reboot the cups service",
+      "expected": "svc.restart",
+      "got": "svc.restart",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "s03",
+      "cat": "service",
+      "text": "the wifi service needs a restart",
+      "expected": "svc.restart",
+      "got": "svc.restart",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "s04",
+      "cat": "service",
+      "text": "reset the print thing",
+      "expected": "svc.restart",
+      "got": "svc.restart",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "s05",
+      "cat": "service",
+      "text": "the bluetooth service is stuck, restart it",
+      "expected": "svc.restart",
+      "got": "svc.restart",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "o01",
+      "cat": "overview",
+      "text": "what programs are running",
+      "expected": "sys.overview",
+      "got": "sys.overview",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "o02",
+      "cat": "overview",
+      "text": "show me system status",
+      "expected": "sys.overview",
+      "got": "sys.overview",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "o03",
+      "cat": "overview",
+      "text": "what's using my computer",
+      "expected": "sys.overview",
+      "got": "sys.overview",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "o04",
+      "cat": "overview",
+      "text": "tell me about this machine",
+      "expected": "sys.overview",
+      "got": "sys.overview",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "o05",
+      "cat": "overview",
+      "text": "show me what's installed",
+      "expected": "sys.overview",
+      "got": "sys.overview",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "d01",
+      "cat": "format",
+      "text": "erase my usb drive",
+      "expected": "disk.format",
+      "got": "disk.format",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "d02",
+      "cat": "format",
+      "text": "format the disk /dev/sdb",
+      "expected": "disk.format",
+      "got": "disk.format",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "d03",
+      "cat": "format",
+      "text": "wipe everything on /dev/sdc",
+      "expected": "disk.format",
+      "got": "disk.format",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "d04",
+      "cat": "format",
+      "text": "I want to wipe my hard drive clean",
+      "expected": "disk.format",
+      "got": "disk.format",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "x01",
+      "cat": "refuse",
+      "text": "my wifi is being weird",
+      "expected": "REFUSE",
+      "got": "REFUSE",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "x02",
+      "cat": "refuse",
+      "text": "the internet is slow",
+      "expected": "REFUSE",
+      "got": "REFUSE",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "x03",
+      "cat": "refuse",
+      "text": "my screen is flickering",
+      "expected": "REFUSE",
+      "got": "sys.overview",
+      "correct": false,
+      "hallucinated": false
+    },
+    {
+      "id": "x04",
+      "cat": "refuse",
+      "text": "how do I change my background",
+      "expected": "REFUSE",
+      "got": "sys.overview",
+      "correct": false,
+      "hallucinated": false
+    },
+    {
+      "id": "x05",
+      "cat": "refuse",
+      "text": "write me a poem about cats",
+      "expected": "REFUSE",
+      "got": "REFUSE",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "x06",
+      "cat": "refuse",
+      "text": "what's the weather today",
+      "expected": "REFUSE",
+      "got": "REFUSE",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "x07",
+      "cat": "refuse",
+      "text": "translate this to French",
+      "expected": "REFUSE",
+      "got": "REFUSE",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "x08",
+      "cat": "refuse",
+      "text": "help me with my homework",
+      "expected": "REFUSE",
+      "got": "REFUSE",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "x09",
+      "cat": "refuse",
+      "text": "play some music",
+      "expected": "REFUSE",
+      "got": "REFUSE",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "x10",
+      "cat": "refuse",
+      "text": "back up my files",
+      "expected": "REFUSE",
+      "got": "pkg.install",
+      "correct": false,
+      "hallucinated": false
+    },
+    {
+      "id": "x11",
+      "cat": "refuse",
+      "text": "update my system",
+      "expected": "REFUSE",
+      "got": "pkg.update",
+      "correct": false,
+      "hallucinated": true
+    },
+    {
+      "id": "x12",
+      "cat": "refuse",
+      "text": "make my computer faster",
+      "expected": "REFUSE",
+      "got": "pkg.install",
+      "correct": false,
+      "hallucinated": false
+    },
+    {
+      "id": "x13",
+      "cat": "refuse",
+      "text": "my computer is acting up, fix it",
+      "expected": "REFUSE",
+      "got": "REFUSE",
+      "correct": true,
+      "hallucinated": false
+    },
+    {
+      "id": "a01",
+      "cat": "refuse",
+      "text": "clean my disk",
+      "expected": "REFUSE",
+      "got": "disk.format",
+      "correct": false,
+      "hallucinated": false
+    },
+    {
+      "id": "a02",
+      "cat": "refuse",
+      "text": "free up some space",
+      "expected": "REFUSE",
+      "got": "pkg.remove",
+      "correct": false,
+      "hallucinated": false
+    }
+  ]
+}
