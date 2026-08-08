@@ -40,7 +40,7 @@
 </div>
 <script>
 const SCREENS = [{"id":"boot","kind":"info","title":"Hermes","body":["","getting ready…",""],"footer":"Starting up — press Enter when you're ready.","auto":false},{"id":"hello","kind":"info","body":["Hello. I'm going to be your computer's voice.","","Instead of hunting through menus, you'll just tell me","what you want — in normal words — and I'll do it.","","Before anything changes on this machine, I'll always","ask you first and explain what it means.","","Setting up takes about five minutes."],"footer":"Press Enter to begin   ·   (Prefer a normal Linux terminal? Press T.)","escape":"terminal"},{"id":"language","kind":"choice","title":"What language should I speak?","body":["Keyboard layout:  US QWERTY   [detected]","","Type here to test it:  (start typing letters)"],"options":[{"id":"en","label":"English","default":true},{"id":"es","label":"Español"},{"id":"fr","label":"Français"},{"id":"de","label":"Deutsch"},{"id":"ja","label":"日本語"}],"footer":"↑/↓ to choose · Enter to continue · K to pick a keyboard"},{"id":"time","kind":"choice","title":"Where are you?","body":["Detected: London, United Kingdom   (from your network)","","This sets your clock and time zone. Nothing is sent","anywhere — I worked it out from your connection, and","I can be wrong."],"options":[{"id":"detected","label":"London, United Kingdom","default":true},{"id":"other","label":"Somewhere else…"}],"footer":"Enter to accept · ↓ to change"},{"id":"account_name","kind":"text","title":"Let's make your account.","body":["What should I call you?"],"input_label":"Your name (like \"Sam\" or \"Priya\")","footer":"Type your name · Enter to continue","validate":"nonempty"},{"id":"account_password","kind":"password","title":"Nice to meet you.","body":["Now a password. This protects your computer if someone","else picks it up.","","A few normal words strung together — like","\"correct-horse-battery\" — is both easier to remember","and harder to break than \"P@ssw0rd!\"."],"input_label":"Password","footer":"Type a password · Enter to continue","validate":"password","extra_choice":{"id":"encrypt","title":"Should I lock the disk itself?","body":["With this on, someone who steals the machine can't read","your files even by removing the drive. The trade-off:","you'll type a second password at every startup, and if","you forget it, the data is gone forever. No exceptions."],"options":[{"id":"no","label":"No — simpler  (recommended if this machine stays home)","default":true},{"id":"yes","label":"Yes — stronger  (needed if it's a laptop you carry)"}]}},{"id":"brain","kind":"choice","title":"Now the interesting part: choosing my brain.","body":["I run entirely on this computer. Nothing you say goes to","the internet, to me, or to any company. You pick how big","a brain this machine can handle.","","I looked at your hardware:  16 GB memory · 8 cores","","All brains are open-source and free; once downloaded they","work with no internet at all."],"options":[{"id":"balanced","label":"Balanced   ← my recommendation for this machine","default":true,"detail":"Good at most things, comfortably fast here.  4.7 GB · ~6 min"},{"id":"light","label":"Light","detail":"Quicker replies, simpler answers.  2.0 GB · ~3 min"},{"id":"deep","label":"Deep","detail":"Noticeably smarter, slower here. Expect a few seconds' pause.  14 GB · ~18 min"},{"id":"skip","label":"Skip for now — set this up later"}],"footer":"[Enter] choose Balanced   ·   [?] what IS a brain?","help":"A \"brain\" is a language model — a file containing everything I know about language, which runs on this computer's own processor.\n\nBigger brain = better answers, more disk space, slower replies.\nSmaller brain = faster, lighter, a bit more literal.\n\nThe one I recommended is called Qwen 2.5 (7 billion parameters, 4-bit)."},{"id":"download","kind":"progress","title":"Downloading my brain…","body":["████████████████████░░░░░░░░░░  58%","2.7 GB of 4.7 GB · about 3 minutes left","","While that runs, the one thing worth knowing:","","I will never change anything on this computer","without showing you a card first."],"footer":"Download runs in the background · Esc to skip","lesson_card":"approval"},{"id":"first_conversation","kind":"info","title":"Ready. Let's try it once together.","body":["Type this, exactly as written, and press Enter:","","    what's on this computer?","","Then try:","    \"install a web browser\"        ← you'll see an approval card","    \"make my text bigger\"          ← small, instant, reversible","    \"what have you done today?\"    ← read my notebook"],"footer":"Say \"help\" any time · \"!shell\" for a traditional terminal"}];
-let i=0,sel=0,typed="",showHelp=false,terminal=false,done=false,errorMsg="";
+let i=0,sel=0,typed="",showHelp=false,terminal=false,done=false,errorMsg="",keyboardPicker=false;
 function render(){
   const f=document.getElementById("frame");
   if(terminal){f.innerHTML='<div class="done">Opened a standard Linux terminal.<br>You can switch back to Hermes any time.</div>';return;}
@@ -55,12 +55,19 @@ function render(){
   }
   if(s.kind==="text"||s.kind==="password"){
     const disp=s.kind==="password"?typed.replace(/./g,"•"):typed;
-    html+='<div class="input"><label>'+esc(s.input_label||"")+'</label><input id="ti" type="text" value="'+esc(disp)+'" readonly></div><div class="err">'+esc(errorMsg)+"</div>";
+    const ph=s.input_label||"";
+    html+='<div class="input"><label>'+esc(ph)+'</label><input id="ti" type="text" value="'+esc(disp)+'" autofocus></div><div class="err">'+esc(errorMsg)+"</div>";
   }
   if(s.kind==="progress"){
     html+='<div class="card"><h4>PREVIEW — the approval card you\'ll always see</h4><div class="row">I\'d like to install VLC</div><div class="row">WHAT THIS DOES: Adds a video player to your computer.</div><div class="row">WHAT CHANGES: + 4 new programs (18 MB) · Nothing removed.</div><div class="row">IF YOU CHANGE YOUR MIND: say "undo that".</div></div>';
   }
   if(showHelp&&s.help){html+='<div class="card"><h4>?</h4><div class="row">'+esc(s.help)+"</div></div>";}
+  if(keyboardPicker){
+    const layouts=["US QWERTY","US International","UK QWERTY","German (QWERTZ)","French (AZERTY)","Spanish","Japanese","Dvorak"];
+    html+='<div class="card"><h4>Pick a keyboard layout</h4>';
+    layouts.forEach((L,idx)=>{ html+='<div class="row'+(idx===0?' sel':'')+'">'+esc(L)+'</div>'; });
+    html+='<div class="row" style="color:var(--dim)">Type on your keys — the letters above should match. Press K or Esc to close.</div></div>';
+  }
   if(s.footer)html+='<div class="footer">'+esc(s.footer)+"</div>";
   f.innerHTML=html;const ti=document.getElementById("ti");if(ti)ti.focus();
 }
@@ -76,17 +83,33 @@ function confirm(){
   sel=0;const nxt=SCREENS[i];if(nxt&&nxt.options)nxt.options.forEach((o,idx)=>{if(o.default)sel=idx;});
   render();
 }
+function onInput(e){
+  const s=SCREENS[i];
+  if(s.kind==="text"||s.kind==="password"){ typed=e.target.value; }
+}
 document.addEventListener("keydown",(e)=>{
   const s=SCREENS[i];
+  const onInputScreen = (s.kind==="text"||s.kind==="password");
+  // while typing in a field, only Backspace/Enter/arrows should act; letters go to the field
+  if(onInputScreen){
+    const t=document.getElementById("ti");
+    if(t && document.activeElement===t){
+      const k=e.key;
+      if(k==="Enter"){confirm();e.preventDefault();}
+      else if(k==="Escape"){ if(typed.length>0){typed="";render();} else {i=Math.max(0,i-1);render();} e.preventDefault(); }
+      else if(k==="Backspace"){ typed=typed.slice(0,-1); e.preventDefault(); }
+      return; // all other keys are normal text entry
+    }
+  }
   if(e.key==="ArrowDown"){if(s.kind==="choice"){sel=(sel+1)%s.options.length;render();}e.preventDefault();}
   else if(e.key==="ArrowUp"){if(s.kind==="choice"){sel=(sel-1+s.options.length)%s.options.length;render();}e.preventDefault();}
   else if(e.key==="Enter"){confirm();e.preventDefault();}
   else if(e.key==="?"){showHelp=!showHelp;render();e.preventDefault();}
-  else if(e.key==="t"||e.key==="T"){terminal=true;render();e.preventDefault();}
-  else if(e.key==="Escape"){if(showHelp){showHelp=false;render();}else{i=Math.max(0,i-1);render();}e.preventDefault();}
-  else if(e.key==="Backspace"){typed=typed.slice(0,-1);render();e.preventDefault();}
-  else if(e.key.length===1&&(s.kind==="text"||s.kind==="password")){typed+=e.key;render();e.preventDefault();}
+  else if(e.key==="t"||e.key==="T"){ if(!onInputScreen){ terminal=true;render(); } e.preventDefault(); }
+  else if(e.key==="k"||e.key==="K"){ if(s.id==="language"||s.id==="time"){ keyboardPicker=!keyboardPicker;render(); } e.preventDefault(); }
+  else if(e.key==="Escape"){ if(showHelp){showHelp=false;render();} else {i=Math.max(0,i-1);render();} e.preventDefault(); }
 });
+document.addEventListener("input",(e)=>{ if(e.target&&e.target.id==="ti"){ typed=e.target.value; } });
 render();
 </script>
 </body>
