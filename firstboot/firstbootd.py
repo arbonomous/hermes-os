@@ -45,14 +45,17 @@ def _prompt(text: str) -> object:
 
 
 def run_wizard() -> Wizard:
-    """Drive the wizard headlessly with sensible defaults.
-
-    A real install would render the UI (preview.html-style TUI) and let the
-    human type. For the service we walk the screens accepting the safe default
-    on every choice and a generated name/password — but a production box should
-    hand control to the interactive TUI instead of this stub. Kept headless so
-    the service is testable without a display.
+    """Drive the wizard. When attached to a real terminal (a human at first
+    boot), launch the interactive TUI (tui.py) so they actually see and drive
+    the setup. When headless (no tty — e.g. a test), walk the screens with
+    safe defaults so the service is still testable without a display.
     """
+    if sys.stdin.isatty():
+        # Live, interactive first boot. The TUI owns navigation and returns a
+        # completed Wizard whose answers feed the provisioning runner.
+        from tui import run as tui_run
+        return tui_run()
+    # Headless fallback: accept safe defaults, generated name/password.
     w = Wizard()
     import getpass
     name = os.environ.get("FIRSTBOOT_NAME") or getpass.getuser() or "user"
