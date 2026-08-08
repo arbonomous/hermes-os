@@ -5,6 +5,9 @@
 # Stop it with:  pkill -TERM -f qemu-system-aarch64   (flushes disk writes)
 set -euo pipefail
 
+# clean serial transcript so each run is a single, unambiguous boot
+rm -f /tmp/hermesos-serial.log
+
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IMG="$DIR/hermesos.qcow2"
 KERNEL="$DIR/hermesos-vmlinuz"

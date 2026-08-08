@@ -27,6 +27,7 @@ import os
 import select
 import sys
 import termios
+import time
 import tty
 from typing import Optional
 
@@ -142,6 +143,7 @@ def run() -> Wizard:
     w = Wizard()
     picker: Optional[list] = None
     help_on = False
+    esc_seq = b""  # in-progress escape sequence (Esc [ A/B/C/D) for arrows
     fd = sys.stdin.fileno()
     old = termios.tcgetattr(fd)
     try:
@@ -160,6 +162,34 @@ def run() -> Wizard:
             if not raw:
                 break
             ch = raw.decode("utf-8", "replace")
+            # Arrow keys arrive as an escape sequence: Esc [ A/B/C/D. We read
+            # them one byte at a time via the main blocking os.read, so we
+            # track the in-progress sequence in esc_seq and act when complete.
+            # This is reliable on both a pty and a real serial console (no
+            # separate non-blocking read or select, which behaved differently
+            # on the QEMU serial).
+            if esc_seq:
+                esc_seq += raw
+                if len(esc_seq) >= 3:
+                    if esc_seq[1:2] == b"[":
+                        if esc_seq[2:3] == b"A":
+                            w.move(-1)
+                        elif esc_seq[2:3] == b"B":
+                            w.move(1)
+                        elif esc_seq[2:3] == b"C":
+                            w.move(1)
+                        elif esc_seq[2:3] == b"D":
+                            w.move(-1)
+                    esc_seq = b""
+                elif raw != b"[":
+                    esc_seq = b""  # not an arrow sequence; reset
+                continue
+            if raw == b"\x1b":
+                # start of an escape sequence (or a lone Esc on progress screen)
+                if scr["kind"] == "progress":
+                    w.confirm(); help_on = False; continue
+                esc_seq = raw
+                continue
             if picker is not None:
                 if ch in ("\x1b",):  # Esc closes picker
                     picker = None
@@ -210,41 +240,6 @@ def run() -> Wizard:
             if ch == "?" and scr.get("help"):
                 help_on = not help_on
                 continue
-            if ch in ("\x1b",):
-                # On a progress/download screen, Esc means "skip" (advance).
-                # Otherwise it's the prefix of an arrow key; read the rest.
-                # Use an unbuffered os.read + non-blocking select so a lone Esc
-                # (no following bytes) cannot freeze the wizard, and so the
-                # escape sequence is parsed correctly (buffered stdin drops it).
-                if scr["kind"] == "progress":
-                    w.confirm()
-                    help_on = False
-                    continue
-                rlist, _, _ = select.select([fd], [], [], 0.2)
-                if rlist:
-                    # After Esc, an arrow key is "\x1b[A"/"\x1b[B"/etc. Read the
-                    # next 2 bytes ("[A") and decode the direction. A lone Esc
-                    # (no follow-up within the timeout) is ignored — it can't
-                    # freeze the wizard.
-                    seq = b""
-                    try:
-                        seq = os.read(fd, 2)
-                    except OSError:
-                        continue
-                    if seq[:1] != b"[":
-                        # not an arrow sequence (e.g. lone Esc); ignore
-                        continue
-                    if seq[1:2] == b"A":
-                        w.move(-1)
-                    elif seq[1:2] == b"B":
-                        w.move(1)
-                    elif seq[1:2] == b"C":
-                        w.move(1)
-                    elif seq[1:2] == b"D":
-                        w.move(-1)
-                else:
-                    # lone Esc with no follow-up: ignore
-                    continue
             if scr["kind"] in ("text", "password"):
                 if ch.isprintable() and ch not in ("\n", "\r"):
                     w.type_char(ch)
